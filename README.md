@@ -15,8 +15,9 @@ It's an app to manage Recipes in Console, using Spectre Console for C#. I made t
     - [ ] Add Categories to recipe
     - [ ] Edit Categories in recipe
 - [ ] Make display on Console
-    - [ ] Make title screen
+    - [x] Make title screen
     - [ ] Make manage recipes screen
     - [ ] Make manage categories of recipe screen
     - [ ] Make exit screen
+    - [ ] Make List all recipes more fancy
 - [ ] Add more fancy stuff, like adding Categories editor

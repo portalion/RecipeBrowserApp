@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Spectre.Console;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace RecipeBrowserApp
 {
@@ -36,14 +37,52 @@ namespace RecipeBrowserApp
 
         public void ListAllRecipes()
         {
-            if (recipes is null) return;
-            foreach (var recipe in recipes)
-                AnsiConsole.WriteLine(recipe.ToString());       
+            while (true)
+            {
+                AnsiConsole.Clear();
+                if (recipes is null) recipes = Enumerable.Empty<Recipe>();
+                if (!recipes.Any())
+                {
+                    AnsiConsole.WriteLine("There are no recipes");
+                    AnsiConsole.Confirm("Want to go back? ");
+                    return;
+                }
+
+                Table view = new Table();
+                view.Expand();
+                view.AddColumns("Title", "Ingredients", "Instructions", "Categories");
+                foreach (var recipe in recipes)
+                    view.AddRow(recipe.Title, recipe.Ingredients, recipe.Instructions, String.Join('\n', recipe.Categories));
+                AnsiConsole.Write(view);
+                if (AnsiConsole.Confirm("Want to go back? ")) break;
+            }
         }
 
         public void Run()
         {
-            ListAllRecipes();
+            bool running = true;
+
+            (Action action, string name)[] availableChoices = new (Action action, string name)[]
+                {
+                    (ListAllRecipes, "List all recipes"),
+                    (()=>{running = false; }, "Exit"),
+                };
+
+            var selectionPrompt = new SelectionPrompt<Action>()
+                .Title("What you want to do?").PageSize(5)
+                .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]");
+
+            foreach (var choice in availableChoices)
+                selectionPrompt.AddChoice(choice.action);
+
+            selectionPrompt.UseConverter(action => Array.Find(availableChoices, val => val.action == action).name);
+
+            while(running)
+            {
+                AnsiConsole.Clear();
+                var choice = AnsiConsole.Prompt(selectionPrompt);
+                choice();
+            }
             SaveRecipes();
         }
 
