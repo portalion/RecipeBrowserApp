@@ -1,3 +1,3 @@
-﻿using Spectre.Console;
-
-AnsiConsole.Markup("[underline red]Hello[/] World!");
+﻿RecipeBrowserApp.App app = new RecipeBrowserApp.App();
+app.Init();
+app.Run();
