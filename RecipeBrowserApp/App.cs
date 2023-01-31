@@ -44,8 +44,8 @@ namespace RecipeBrowserApp
                 if (!recipes.Any())
                 {
                     AnsiConsole.WriteLine("There are no recipes");
-                    AnsiConsole.Confirm("Want to go back? ");
-                    return;
+                    if (AnsiConsole.Confirm("Want to go back? ")) return;
+                    continue;
                 }
 
                 Table view = new Table();
