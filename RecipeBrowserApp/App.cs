@@ -13,7 +13,7 @@ namespace RecipeBrowserApp
     {
         private string appPath;
         private string recipesPath;
-        private IEnumerable<Recipe> recipes;
+        private IEnumerable<Recipe> recipes = Enumerable.Empty<Recipe>();
 
         private void EditRecipe(Recipe recipe)
         {
@@ -69,12 +69,14 @@ namespace RecipeBrowserApp
                     "Remove",
                     "Nothing"
                 }).WrapAround(true));
+                if(!recipe.Categories.Any())
                 switch (choice)
                 {
                     case "Add":
                         tmp.Add(AnsiConsole.Ask<string>("What category you want to add?"));                 
                         break;
                     case "Remove":
+                        if (!recipes.Any()) break;
                         tmp.Remove(AnsiConsole.Prompt(new SelectionPrompt<string>()
                             .Title("What category you want to remove?").AddChoices(tmp)));
                         break;
@@ -106,7 +108,6 @@ namespace RecipeBrowserApp
             using (FileStream toSave = File.Open(recipesPath, FileMode.Create, FileAccess.Write))
                 JsonSerializer.Serialize(toSave, recipes);           
         }
-
         public void ListAllRecipes()
         {
             while (true)
@@ -129,9 +130,9 @@ namespace RecipeBrowserApp
                 if (AnsiConsole.Confirm("Want to go back? ")) break;
             }
         }  
-
         public void EditRecipes()
         {
+            if (!recipes.Any()) return;
             while(true)
             {
                 if (AnsiConsole.Confirm("Want to go back?", false)) break;
@@ -145,7 +146,29 @@ namespace RecipeBrowserApp
                 EditRecipe(AnsiConsole.Prompt(selectionPrompt));
             }
         }
+        public void AddRecipe()
+        {
+            Recipe recipe = new Recipe();
+            var askForSetting = (string text, string whatSet) =>
+            {
+                string toSet;
+                do
+                {
+                    AnsiConsole.Clear();
+                    toSet = AnsiConsole.Ask<string>(text);
+                } while (!AnsiConsole.Confirm($"Set {whatSet} to: {toSet}?"));
+                AnsiConsole.Clear();
+                return toSet;
+            };
 
+            recipe.Title = askForSetting("How to name new recipe?", "title");
+            recipe.Ingredients = askForSetting("What ingredients do you need?", "ingredients");
+            recipe.Instructions = askForSetting("Tell me instructions on how to make that recipe: ", "instrustions");
+            recipe.Categories = Enumerable.Empty<string>();
+            EditCategories(recipe);
+            if (AnsiConsole.Confirm($"Should i create new recipe called: {recipe.Title}"))
+                recipes = recipes.Append(recipe);
+        }
         public void Run()
         {
             bool running = true;
@@ -154,6 +177,7 @@ namespace RecipeBrowserApp
                 {
                     (ListAllRecipes, "List all recipes"),
                     (EditRecipes, "Edit recipes"),
+                    (AddRecipe, "Add new recipe"),
                     (()=>{running = false; }, "Exit"),
                 };
 
