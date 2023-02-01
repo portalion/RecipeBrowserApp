@@ -7,8 +7,8 @@ It's an app to manage Recipes in Console, using Spectre Console for C#. I made t
 * JSON
 
 ## To-do
-- [ ] Make all logic behind
-    - [ ] Add new recipes
+- [x] Make all logic behind
+    - [x] Add new recipes
     - [x] Edit recipes
     - [x] List all recipes
     - [x] Store in JSON in app folder

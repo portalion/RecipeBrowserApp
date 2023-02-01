@@ -84,9 +84,7 @@ namespace RecipeBrowserApp
                         recipe.Categories = tmp;
                         return;
                 }
-
             }
-
         }
 
         public App()
