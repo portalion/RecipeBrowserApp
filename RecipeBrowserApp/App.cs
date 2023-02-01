@@ -20,18 +20,19 @@ namespace RecipeBrowserApp
             while(true)
             {
                 AnsiConsole.Clear();
-                var choice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("What you want to edit?")
+                var choice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("What you want to edit?").WrapAround(true)
                     .AddChoices(new string[]
                     {
                         "Title",
                         "Ingredients",
                         "Instructions",
+                        "Categories",
                         "Remove",
                         "Nothing"
                     }));
                 if (choice == "Nothing") break;
                 string toReplace = "";
-                if (choice != "Remove") toReplace = AnsiConsole.Ask<string>($"Change {choice} to: ");
+                if (choice != "Remove" && choice != "Categories") toReplace = AnsiConsole.Ask<string>($"Change {choice} to: ");
                 switch (choice)
                 {
                     case "Title":
@@ -43,6 +44,9 @@ namespace RecipeBrowserApp
                     case "Instructions":
                         recipe.Instructions = toReplace;
                         break;
+                    case "Categories":
+                        AddNewCategories(recipe);
+                        break;
                     case "Remove":
                         if (AnsiConsole.Confirm($"Really want to delete recipe with title: {recipe.Title}", false))
                         {
@@ -53,7 +57,16 @@ namespace RecipeBrowserApp
                 }
             }
         }
-
+        public void AddNewCategories(Recipe recipe)
+        {
+            var tmp = recipe.Categories.ToList();
+            while(AnsiConsole.Confirm("Do you want to add more categories?"))
+            {
+                tmp.Add(AnsiConsole.Ask<string>("What category you want to add?"));
+                AnsiConsole.Clear();
+            }
+            recipe.Categories = tmp;
+        }
 
         public App()
         {
@@ -96,7 +109,7 @@ namespace RecipeBrowserApp
                 AnsiConsole.Write(view);
                 if (AnsiConsole.Confirm("Want to go back? ")) break;
             }
-        }
+        }  
 
         public void EditRecipes()
         {
@@ -126,6 +139,7 @@ namespace RecipeBrowserApp
                 };
 
             var selectionPrompt = new SelectionPrompt<Action>()
+                .WrapAround(true)
                 .Title("What you want to do?")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]");
 
