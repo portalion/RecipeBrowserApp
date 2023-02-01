@@ -45,7 +45,7 @@ namespace RecipeBrowserApp
                         recipe.Instructions = toReplace;
                         break;
                     case "Categories":
-                        AddNewCategories(recipe);
+                        EditCategories(recipe);
                         break;
                     case "Remove":
                         if (AnsiConsole.Confirm($"Really want to delete recipe with title: {recipe.Title}", false))
@@ -57,15 +57,34 @@ namespace RecipeBrowserApp
                 }
             }
         }
-        public void AddNewCategories(Recipe recipe)
+        private void EditCategories(Recipe recipe)
         {
             var tmp = recipe.Categories.ToList();
-            while(AnsiConsole.Confirm("Do you want to add more categories?"))
+            while (true)
             {
-                tmp.Add(AnsiConsole.Ask<string>("What category you want to add?"));
                 AnsiConsole.Clear();
+                var choice = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(new string[]
+                {
+                    "Add",
+                    "Remove",
+                    "Nothing"
+                }).WrapAround(true));
+                switch (choice)
+                {
+                    case "Add":
+                        tmp.Add(AnsiConsole.Ask<string>("What category you want to add?"));                 
+                        break;
+                    case "Remove":
+                        tmp.Remove(AnsiConsole.Prompt(new SelectionPrompt<string>()
+                            .Title("What category you want to remove?").AddChoices(tmp)));
+                        break;
+                    case "Nothing":
+                        recipe.Categories = tmp;
+                        return;
+                }
+
             }
-            recipe.Categories = tmp;
+
         }
 
         public App()
