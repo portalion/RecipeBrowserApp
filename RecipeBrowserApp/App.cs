@@ -19,6 +19,7 @@ namespace RecipeBrowserApp
         {
             while(true)
             {
+                AnsiConsole.Clear();
                 var choice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("What you want to edit?")
                     .AddChoices(new string[]
                     {
