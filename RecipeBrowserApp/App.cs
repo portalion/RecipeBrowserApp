@@ -15,6 +15,45 @@ namespace RecipeBrowserApp
         private string recipesPath;
         private IEnumerable<Recipe> recipes;
 
+        private void EditRecipe(Recipe recipe)
+        {
+            while(true)
+            {
+                var choice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("What you want to edit?")
+                    .AddChoices(new string[]
+                    {
+                        "Title",
+                        "Ingredients",
+                        "Instructions",
+                        "Remove",
+                        "Nothing"
+                    }));
+                if (choice == "Nothing") break;
+                string toReplace = "";
+                if (choice != "Remove") toReplace = AnsiConsole.Ask<string>($"Change {choice} to: ");
+                switch (choice)
+                {
+                    case "Title":
+                        recipe.Title = toReplace;
+                        break;
+                    case "Ingredients":
+                        recipe.Ingredients = toReplace;
+                        break;
+                    case "Instructions":
+                        recipe.Instructions = toReplace;
+                        break;
+                    case "Remove":
+                        if (AnsiConsole.Confirm($"Really want to delete recipe with title: {recipe.Title}", false))
+                        {
+                            recipes = recipes.Except(new Recipe[] { recipe });
+                            return;
+                        }
+                        break;
+                }
+            }
+        }
+
+
         public App()
         {
             appPath = Environment.CurrentDirectory;
@@ -58,6 +97,22 @@ namespace RecipeBrowserApp
             }
         }
 
+        public void EditRecipes()
+        {
+            while(true)
+            {
+                if (AnsiConsole.Confirm("Want to go back?", false)) break;
+                var selectionPrompt = new SelectionPrompt<Recipe>().Title("Which recipe you want to edit?").PageSize(5)
+                .MoreChoicesText("[grey](Move up and down to reveal more recipes)[/]"); ;
+
+                foreach(var recipe in recipes)
+                    selectionPrompt.AddChoice(recipe);
+                selectionPrompt.Converter = recipe => recipe.Title;
+
+                EditRecipe(AnsiConsole.Prompt(selectionPrompt));
+            }
+        }
+
         public void Run()
         {
             bool running = true;
@@ -65,12 +120,13 @@ namespace RecipeBrowserApp
             (Action action, string name)[] availableChoices = new (Action action, string name)[]
                 {
                     (ListAllRecipes, "List all recipes"),
+                    (EditRecipes, "Edit recipes"),
                     (()=>{running = false; }, "Exit"),
                 };
 
             var selectionPrompt = new SelectionPrompt<Action>()
-                .Title("What you want to do?").PageSize(5)
-                .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]");
+                .Title("What you want to do?")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]");
 
             foreach (var choice in availableChoices)
                 selectionPrompt.AddChoice(choice.action);

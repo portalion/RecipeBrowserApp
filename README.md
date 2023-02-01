@@ -9,15 +9,15 @@ It's an app to manage Recipes in Console, using Spectre Console for C#. I made t
 ## To-do
 - [ ] Make all logic behind
     - [ ] Add new recipes
-    - [ ] Edit recipes
+    - [x] Edit recipes
     - [x] List all recipes
     - [x] Store in JSON in app folder
     - [ ] Add Categories to recipe
     - [ ] Edit Categories in recipe
 - [ ] Make display on Console
     - [x] Make title screen
-    - [ ] Make manage recipes screen
+    - [x] Make manage recipes screen
     - [ ] Make manage categories of recipe screen
-    - [ ] Make exit screen
+    - [x] Make exit screen
     - [ ] Make List all recipes more fancy
 - [ ] Add more fancy stuff, like adding Categories editor
