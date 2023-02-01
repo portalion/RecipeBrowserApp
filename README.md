@@ -13,7 +13,7 @@ It's an app to manage Recipes in Console, using Spectre Console for C#. I made t
     - [x] List all recipes
     - [x] Store in JSON in app folder
     - [x] Add Categories to recipe
-    - [ ] Edit Categories in recipe
+    - [x] Edit Categories in recipe
 - [ ] Make display on Console
     - [x] Make title screen
     - [x] Make manage recipes screen
