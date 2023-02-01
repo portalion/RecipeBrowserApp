@@ -21,3 +21,7 @@ It's an app to manage Recipes in Console, using Spectre Console for C#. I made t
     - [x] Make exit screen
 - [ ] Add more fancy stuff, like adding Categories editor
     - [ ] Make List all recipes more fancy
+    - [ ] Make Categorie adder (change whole category system)
+- [ ] Refactor
+    - [ ] Edit recipes
+    - [ ] Edit categories
