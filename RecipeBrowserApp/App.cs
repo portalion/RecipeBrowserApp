@@ -111,7 +111,6 @@ namespace RecipeBrowserApp
             while (true)
             {
                 AnsiConsole.Clear();
-                if (recipes is null) recipes = Enumerable.Empty<Recipe>();
                 if (!recipes.Any())
                 {
                     AnsiConsole.WriteLine("There are no recipes");
@@ -169,8 +168,10 @@ namespace RecipeBrowserApp
         }
         public void Run()
         {
+            //Variable for managing loop
             bool running = true;
 
+            //Here add new options to main menu format: (Function, Option String)
             (Action action, string name)[] availableChoices = new (Action action, string name)[]
                 {
                     (ListAllRecipes, "List all recipes"),
@@ -179,22 +180,22 @@ namespace RecipeBrowserApp
                     (()=>{running = false; }, "Exit"),
                 };
 
+            //This prompt is made of Actions, we get string that will be displayed from available
+            //choices table. (thats what UseConverter lambda does)
             var selectionPrompt = new SelectionPrompt<Action>()
                 .WrapAround(true)
                 .Title("What you want to do?")
-                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]");
+                .UseConverter(action => Array.Find(availableChoices, val => val.action == action).name);
 
             foreach (var choice in availableChoices)
                 selectionPrompt.AddChoice(choice.action);
 
-            selectionPrompt.UseConverter(action => Array.Find(availableChoices, val => val.action == action).name);
-
             while(running)
             {
                 AnsiConsole.Clear();
-                var choice = AnsiConsole.Prompt(selectionPrompt);
-                choice();
+                AnsiConsole.Prompt(selectionPrompt)();
             }
+            //Save recipes to JSON after ending main loop
             SaveRecipes();
         }
 
