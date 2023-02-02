@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace RecipeBrowserApp
 {
-    internal class App
+    internal class App //Simple class for whole app (that console app isnt so hard to implement to break up
     {
         private string appPath;
         private string recipesPath;
@@ -17,7 +17,7 @@ namespace RecipeBrowserApp
 
         private void EditRecipe(Recipe recipe)
         {
-            while(true)
+            while (true)
             {
                 AnsiConsole.Clear();
                 var choice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("What you want to edit?").WrapAround(true)
@@ -69,11 +69,11 @@ namespace RecipeBrowserApp
                     "Remove",
                     "Nothing"
                 }).WrapAround(true));
-                if(!recipe.Categories.Any())
+
                 switch (choice)
                 {
                     case "Add":
-                        tmp.Add(AnsiConsole.Ask<string>("What category you want to add?"));                 
+                        tmp.Add(AnsiConsole.Ask<string>("What category you want to add?"));
                         break;
                     case "Remove":
                         if (!recipes.Any()) break;
@@ -95,48 +95,53 @@ namespace RecipeBrowserApp
             recipesPath = Path.Combine(recipesPath, "Recipes.json");
             Init();
         }
-        public void Init()  
+        public void Init()
         {
+            //That function only reads data from Recipes.json file
             if (File.Exists(recipesPath))
                 recipes = JsonSerializer.Deserialize<IEnumerable<Recipe>>(File.ReadAllText(recipesPath)) ?? Enumerable.Empty<Recipe>();
             else recipes = Enumerable.Empty<Recipe>();
         }
         public void SaveRecipes()
         {
+            //Function only for saving to recipes.json file
             using (FileStream toSave = File.Open(recipesPath, FileMode.Create, FileAccess.Write))
-                JsonSerializer.Serialize(toSave, recipes);           
+                JsonSerializer.Serialize(toSave, recipes);
         }
         public void ListAllRecipes()
         {
-            while (true)
+            AnsiConsole.Clear();
+            if (!recipes.Any())
             {
-                AnsiConsole.Clear();
-                if (!recipes.Any())
-                {
-                    AnsiConsole.WriteLine("There are no recipes");
-                    if (AnsiConsole.Confirm("Want to go back? ")) return;
-                    continue;
-                }
-
-                Table view = new Table();
-                view.Expand();
-                view.AddColumns("Title", "Ingredients", "Instructions", "Categories");
-                foreach (var recipe in recipes)
-                    view.AddRow(recipe.Title, recipe.Ingredients, recipe.Instructions, String.Join('\n', recipe.Categories));
-                AnsiConsole.Write(view);
-                if (AnsiConsole.Confirm("Want to go back? ")) break;
+                AnsiConsole.WriteLine("There are no recipes");
+                Console.ReadKey();
+                return;
             }
-        }  
+
+            //Make table with all informations about recipe, after that wait for key
+            Table allRecipes = new Table().AddColumns("Title", "Ingredients", "Instructions", "Categories").Expand().MinimalBorder();
+            foreach (var recipe in recipes)
+            {
+                allRecipes.AddRow(recipe.Title, recipe.Ingredients, recipe.Instructions,
+                   string.Join('\n', recipe.Categories));
+                if(recipes.Last() != recipe) allRecipes.AddRow(new Rule(), new Rule(), new Rule(), new Rule());
+            }
+
+            AnsiConsole.Write(allRecipes);
+            AnsiConsole.Write("Press any key to continue");
+            Console.ReadKey();
+
+        }
         public void EditRecipes()
         {
             if (!recipes.Any()) return;
-            while(true)
+            while (true)
             {
                 if (AnsiConsole.Confirm("Want to go back?", false)) break;
                 var selectionPrompt = new SelectionPrompt<Recipe>().Title("Which recipe you want to edit?").PageSize(5)
                 .MoreChoicesText("[grey](Move up and down to reveal more recipes)[/]"); ;
 
-                foreach(var recipe in recipes)
+                foreach (var recipe in recipes)
                     selectionPrompt.AddChoice(recipe);
                 selectionPrompt.Converter = recipe => recipe.Title;
 
@@ -171,7 +176,7 @@ namespace RecipeBrowserApp
             //Variable for managing loop
             bool running = true;
 
-            //Here add new options to main menu format: (Function, Option String)
+            //Here add new options to main menu, format: (Function, Option String)
             (Action action, string name)[] availableChoices = new (Action action, string name)[]
                 {
                     (ListAllRecipes, "List all recipes"),
@@ -190,7 +195,7 @@ namespace RecipeBrowserApp
             foreach (var choice in availableChoices)
                 selectionPrompt.AddChoice(choice.action);
 
-            while(running)
+            while (running)
             {
                 AnsiConsole.Clear();
                 AnsiConsole.Prompt(selectionPrompt)();
