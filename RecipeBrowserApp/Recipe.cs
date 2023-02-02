@@ -11,6 +11,18 @@ namespace RecipeBrowserApp
         public string Instructions { get; set; }
         public IEnumerable<string> Categories { get; set; }
 
+        public Recipe()
+        {
+            Title = string.Empty;
+            Ingredients = string.Empty;
+            Instructions = string.Empty;
+            Categories = Enumerable.Empty<string>();
+        }
+        public bool IsEmpty()
+        {
+            return string.IsNullOrEmpty(Title) && string.IsNullOrEmpty(Ingredients) 
+                && string.IsNullOrEmpty(Instructions) && !Categories.Any();
+        }
         public override string ToString() => JsonSerializer.Serialize(this);
     }
 }

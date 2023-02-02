@@ -6,6 +6,8 @@ using System.Text.Json;
 using Spectre.Console;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using Spectre.Console.Rendering;
+using System.Xml.Serialization;
 
 namespace RecipeBrowserApp
 {
@@ -87,6 +89,24 @@ namespace RecipeBrowserApp
             }
         }
 
+        private Panel GetRecipeRenderablePanel(Recipe recipe)
+        {
+            List<IRenderable> panelContent = new List<IRenderable>();
+            var AddWithBottomBorder = (string text, string ruleText) =>
+            {
+                panelContent.Add(new Text(text).Centered());
+                panelContent.Add(new Rule(ruleText));
+            };
+            AddWithBottomBorder(recipe.Ingredients, "Instructions");
+            AddWithBottomBorder(recipe.Instructions, "Categories");
+
+            panelContent.Add(new Text(string.Join('\n', recipe.Categories)).Centered());
+
+            var result = new Panel(new Rows(panelContent)).Header(recipe.Title, Justify.Center);
+            result.Width = 40;
+            return result;
+        }
+
         public App()
         {
             appPath = Environment.CurrentDirectory;
@@ -124,7 +144,7 @@ namespace RecipeBrowserApp
             {
                 allRecipes.AddRow(recipe.Title, recipe.Ingredients, recipe.Instructions,
                    string.Join('\n', recipe.Categories));
-                if(recipes.Last() != recipe) allRecipes.AddRow(new Rule(), new Rule(), new Rule(), new Rule());
+                if (recipes.Last() != recipe) allRecipes.AddRow(new Rule(), new Rule(), new Rule(), new Rule());
             }
 
             AnsiConsole.Write(allRecipes);
@@ -132,7 +152,7 @@ namespace RecipeBrowserApp
             Console.ReadKey();
 
         }
-        public void EditRecipes()
+        public void EditRecipes() //Use recipe editor only here
         {
             if (!recipes.Any()) return;
             while (true)
@@ -148,30 +168,53 @@ namespace RecipeBrowserApp
                 EditRecipe(AnsiConsole.Prompt(selectionPrompt));
             }
         }
-        public void AddRecipe()
+        public void AddRecipe() //Change it to recipe editor and add new AddRecipe function
         {
-            Recipe recipe = new Recipe();
-            var askForSetting = (string text, string whatSet) =>
+            //Recipe which will be added (or no)
+            Recipe newRecipe = new Recipe();
+            bool waitingToCreate = true;
+
+            //Here add new Functionalities to Recipe Editor
+            (Action action, string name)[] availableChoices = new (Action action, string name)[]
             {
-                string toSet;
-                do
-                {
-                    AnsiConsole.Clear();
-                    toSet = AnsiConsole.Ask<string>(text);
-                } while (!AnsiConsole.Confirm($"Set {whatSet} to: {toSet}?"));
-                AnsiConsole.Clear();
-                return toSet;
+                (() => newRecipe.Title = AnsiConsole.Ask<string>("How to edit title?"), "Edit title"),
+                (() => newRecipe.Title = string.Empty, "Remove title"),
+
+                (() => newRecipe.Ingredients = AnsiConsole.Ask<string>("How to edit ingredients?(if you want newline type \\n)")
+                    .Replace("\\n", "\n") + '\n', "Edit ingredients"),
+                (() => newRecipe.Ingredients += AnsiConsole.Ask<string>("What line should i add?") + '\n', "Add line to ingredients"),
+                (() => newRecipe.Ingredients = string.Empty, "Clear ingredients"),
+
+                (() => newRecipe.Instructions = AnsiConsole.Ask<string>("How to edit Instructions?(if you want newline type \\n)")
+                    .Replace("\\n", "\n") + '\n', "Edit Instructions"),
+                (() => newRecipe.Instructions += AnsiConsole.Ask<string>("What line should i add?") + '\n', "Add line to Instructions"),
+                (() => newRecipe.Instructions = string.Empty, "Clear Instructions"),
+
+                (() => EditCategories(newRecipe), "Edit Categories"),
+                (() => {waitingToCreate = false; recipes = recipes.Append(newRecipe); }, "Save and exit"),
+                (() => waitingToCreate = false, "Cancel")
             };
 
-            recipe.Title = askForSetting("How to name new recipe?", "title");
-            recipe.Ingredients = askForSetting("What ingredients do you need?", "ingredients");
-            recipe.Instructions = askForSetting("Tell me instructions on how to make that recipe: ", "instrustions");
-            recipe.Categories = Enumerable.Empty<string>();
-            EditCategories(recipe);
-            if (AnsiConsole.Confirm($"Should i create new recipe called: {recipe.Title}"))
-                recipes = recipes.Append(recipe);
+            //This prompt is made of Actions, we get string that will be displayed from available
+            //choices table. (thats what UseConverter lambda does)
+            var selectionPrompt = new SelectionPrompt<Action>()
+                .WrapAround(true)
+                .PageSize(15)
+                .Title("Welcome in Recipe Creator.\nWhat you want to do?")
+                .UseConverter(action => Array.Find(availableChoices, val => val.action == action).name);
+
+            foreach (var choice in availableChoices)
+                selectionPrompt.AddChoice(choice.action);
+
+            while (waitingToCreate)
+            {
+                AnsiConsole.Clear();
+                if (!newRecipe.IsEmpty()) AnsiConsole.Write(Align.Center(GetRecipeRenderablePanel(newRecipe)));
+                var choice = AnsiConsole.Prompt(selectionPrompt);
+                choice();
+            }
         }
-        public void Run()
+        public void Run() //Add remove recipe option
         {
             //Variable for managing loop
             bool running = true;
