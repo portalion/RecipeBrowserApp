@@ -18,6 +18,20 @@ namespace RecipeBrowserApp
             Instructions = string.Empty;
             Categories = Enumerable.Empty<string>();
         }
+
+        public Recipe Copy()
+        {
+            Recipe recipe = new Recipe();
+            recipe.Title = Title;
+            recipe.Instructions = Instructions;
+            recipe.Ingredients = Ingredients;
+            List<string> categoriesList = new List<string>();
+            
+            foreach(var category in Categories) 
+                categoriesList.Add(category);
+            return recipe;
+        }
+
         public bool IsEmpty()
         {
             return string.IsNullOrEmpty(Title) && string.IsNullOrEmpty(Ingredients) 

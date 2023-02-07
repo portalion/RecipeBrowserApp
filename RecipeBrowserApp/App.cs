@@ -165,14 +165,17 @@ namespace RecipeBrowserApp
                     selectionPrompt.AddChoice(recipe);
                 selectionPrompt.Converter = recipe => recipe.Title;
 
-                EditRecipe(AnsiConsole.Prompt(selectionPrompt));
+                Recipe toChange = AnsiConsole.Prompt(selectionPrompt);
+                Recipe toChangeCopy = toChange.Copy();
+                if (RecipeCreator(toChangeCopy)) toChange = toChangeCopy;
             }
         }
-        public void AddRecipe() //Change it to recipe editor and add new AddRecipe function
+
+        public bool RecipeCreator(Recipe newRecipe)
         {
-            //Recipe which will be added (or no)
-            Recipe newRecipe = new Recipe();
+            //set waitingToCreate to false, then it returns bool telling you if there was cancel press
             bool waitingToCreate = true;
+            bool saved = false;
 
             //Here add new Functionalities to Recipe Editor
             (Action action, string name)[] availableChoices = new (Action action, string name)[]
@@ -191,7 +194,7 @@ namespace RecipeBrowserApp
                 (() => newRecipe.Instructions = string.Empty, "Clear Instructions"),
 
                 (() => EditCategories(newRecipe), "Edit Categories"),
-                (() => {waitingToCreate = false; recipes = recipes.Append(newRecipe); }, "Save and exit"),
+                (() => {waitingToCreate = false; saved = true; }, "Save and exit"),
                 (() => waitingToCreate = false, "Cancel")
             };
 
@@ -213,6 +216,14 @@ namespace RecipeBrowserApp
                 var choice = AnsiConsole.Prompt(selectionPrompt);
                 choice();
             }
+            return saved;
+        }
+
+        public void AddRecipe()
+        {
+            //Recipe which will be added (or no)
+            Recipe newRecipe = new Recipe();
+            if(RecipeCreator(newRecipe)) recipes = recipes.Append(newRecipe);
         }
         public void Run() //Add remove recipe option
         {
